@@ -108,10 +108,11 @@ final class MessageConnection {
     }
 
     private func drainBuffer() {
-        while let (length, prefix) = decodeVarintPrefix(buffer), buffer.count >= prefix + length {
-            let start = buffer.startIndex + prefix
-            let message = buffer.subdata(in: start..<(start + length))
-            buffer = buffer.subdata(in: (start + length)..<buffer.endIndex)
+        while let frame = decodeVarintPrefix(buffer), buffer.count >= frame.length + frame.value {
+            let start = buffer.startIndex + frame.length
+            let end = start + frame.value
+            let message = buffer.subdata(in: start..<end)
+            buffer = buffer.subdata(in: end..<buffer.endIndex)
             emit(.message(message))
         }
     }
